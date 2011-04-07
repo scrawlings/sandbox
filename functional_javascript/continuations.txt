@@ -1,0 +1,30 @@
+Why Continuations?
+
+First of all what does continuation passing style look like? By example: I've turned a highly recursive algorithm into something using continuation passing style: It's a recursive descent expression parser in JavaScript, it takes math expressions and reprints them with all the correct bracketing for associativity and precedence.
+
+The heart of the technical challenge is not relying on functions to implicitly return to the point of call, instead tell the function where it continues when it is complete. After you make your call (send a message) you never come back.
+
+Simulate this by not using returns, pass a function to call next, calling that next function when you have finished with current function, do nothing after the continuation call in the current function. 
+
+Start by calling your first function and giving it the function you want to call last, (that's the function 'done' in my example). 
+
+The trick is it can inject functions in between so long as it tells them to call the right function in the end. You can see that in the way I use my function chain.
+
+To make life simple the first thing I did was make all the signatures the same (varargs can be tricky in JavaScript), everything gets an accumulated result to pass forward (this is a key transformation to make use of tail recursion optimisations anyway), and also a function to call when everything is done.
+
+Then, instead of calling functions and waiting for their return values so that I can use them as inputs into subsequent functions, I provide the subsequent functions as continuations. I don't bother with return values at all, no more return statements.
+
+So Why?
+
+One of the most compelling reasons sadly isn't relevant to Java or JavaScript. In languages with Tail Recursion Optimisation continuation passing style lets TRO work. So my heavily recursive algorithm becomes as efficient in memory as a simple looping. (Sadly, without TRO if using function calls to pass messages it makes stack overflow more likely in Java or JavaScript or Scala etc…) But even without TRO it's a mechanical process to turn this into a loop rather than recursive algorithm.
+
+Immutable Data: it has allowed me to eliminate mutation. Nothing is consuming the original list of tokens, no more shifts mutating the token stream: I now have something like a recursive descent parser that doesn't consume it's tokens. Implicit thread safety. 
+
+Explicit Control Flow: I've used function calls to pass control, but the actual call is made by a higher order function which allows me to add my own error checking, or turn it into a deferred function call to improve UI responsiveness, or to use some other message passing technique.
+
+Parallel Abstractions: some of the most scalable parallel systems abstractions only offer message calls without returns, (to avoid implicit synchronisation). By eliminating returns I can transform my algorithm into something that can be readily expressed in highly scalable distributed systems.
+
+Object Oriented Message: learning to think in terms of one way message calls can be a powerful tool in your object oriented programming tool kit. Continuation passing style really makes clear the idea that a function call is sending a message to an object.
+
+Broaden your mind: learn to recognise that implicit function returns are a powerful language design choice, but not an unavoidable. Functions and procedure that return control to the point they were called from are the dominant, almost unquestioned, paradigm of modern programming. Learning continuation passing style challenges you to question and understand that generally unrecognised assumption.
+
