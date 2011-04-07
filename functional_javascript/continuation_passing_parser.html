@@ -4,30 +4,30 @@
 </head>
 <body>
 <script>
-
+ 
   function triplet(a, op) {
     return function(b, tokens, c) {
       c([a, op, b], tokens);
     }  
   }
 
-  function cont_pair(fn, c) {
+  function continuation_pair(fn, c) {
     return function() {
       var a = Array.prototype.slice.call(arguments);
       fn.apply(null, a.concat(c));
     }
   }
 
-  function cont() {
+  function continuation() {
     var fn, len;
     fn = arguments[arguments.length - 1];
     for (len = arguments.length - 2; len >= 0; --len) {
-      fn = cont_pair(arguments[len], fn);
+      fn = continuation_pair(arguments[len], fn);
     }
     return fn
   }
   
-  function send() {
+  function continue_with() {
     var fn, a;
     fn = arguments[arguments.length-1];
     a = Array.prototype.slice.call(arguments, 0, arguments.length-1);
@@ -38,47 +38,47 @@
 
 
   function expr(a, tokens, c) {
-    send(null, tokens, cont(term, expr_tail, c));
+    continue_with(null, tokens, continuation(term, expr_tail, c));
   }
 
   function expr_tail(a, tokens, c) {
     if (tokens[0] === '-' || tokens[0] === '+' ) {
-      send(a, tokens.slice(1), cont(term, triplet(a, tokens[0]), expr_tail, c));
+      continue_with(a, tokens.slice(1), continuation(term, triplet(a, tokens[0]), expr_tail, c));
     } else {
-      send(a, tokens, c);
+      continue_with(a, tokens, c);
     }  
   }
 
   function term(a, tokens, c) {
-    send(null, tokens, cont(xpn, term_tail, c));
+    continue_with(null, tokens, continuation(xpn, term_tail, c));
   }
 
   function term_tail(a, tokens, c) {
     if (tokens[0] === '/' || tokens[0] === '*' ) {
-      send(null, tokens.slice(1), cont(xpn, triplet(a, tokens[0]),term_tail, c));
+      continue_with(null, tokens.slice(1), continuation(xpn, triplet(a, tokens[0]),term_tail, c));
     } else {
-      send(a, tokens, c);
+      continue_with(a, tokens, c);
     }  
   }
 
   function xpn(a, tokens, c) {
-    send(null, tokens, cont(factor, xpn_tail, c));
+    continue_with(null, tokens, continuation(factor, xpn_tail, c));
   }
 
   function xpn_tail(a, tokens, c) {
     if (tokens[0] === '^') {
-      send(null, tokens.slice(1), cont(xpn, triplet(a, tokens[0]), c));
+      continue_with(null, tokens.slice(1), continuation(xpn, triplet(a, tokens[0]), c));
     } else {
-      send(a, tokens, c);
+      continue_with(a, tokens, c);
     }
   }
 
   function factor(a, tokens, c) {
     if (typeof(tokens[0]) === typeof(1)) { //'number') {
-      send(tokens[0], tokens.slice(1), c);
+      continue_with(tokens[0], tokens.slice(1), c);
     }  
     else if (tokens[0] === '(') {
-      send(null, tokens.slice(1), cont(expr, factor_bracket_tail, c));
+      continue_with(null, tokens.slice(1), continuation(expr, factor_bracket_tail, c));
     } else {
       throw "bad factor";
     }
@@ -86,7 +86,7 @@
 
   function factor_bracket_tail(a, tokens, c) {
     if (tokens[0] === ')') {
-      send(a, tokens.slice(1), c);
+      continue_with(a, tokens.slice(1), c);
     } else {
       throw "bad bracketing";
     }
@@ -97,14 +97,14 @@
 
 
   try {
-    send(null, [10, '+', 11, '*', 12], cont(expr, done));
-    send(null, [13, '/', 14, '-', 15], cont(expr, done));
-    send(null, [16, '-', 17, '-', 18, '-', 19], cont(expr, done));
-    send(null, [20, '-', 21, '/', 22, '-', 23], cont(expr, done));
-    send(null, [24, '/', '(', 25, '-', 26, ')'], cont(expr, done));
-    send(null, [27, '-', 28, '^', 29, '^', 30, '^', 31], cont(expr, done));
-    send(null, [32, '^', 33, '*', 34, '^', 35], cont(expr, done));
-    send(null, [36, '^', 37, '*', '(', 38, ')', '^', 39], cont(expr, done));
+    continue_with(null, [10, '+', 11, '*', 12], continuation(expr, done));
+    continue_with(null, [13, '/', 14, '-', 15], continuation(expr, done));
+    continue_with(null, [16, '-', 17, '-', 18, '-', 19], continuation(expr, done));
+    continue_with(null, [20, '-', 21, '/', 22, '-', 23], continuation(expr, done));
+    continue_with(null, [24, '/', '(', 25, '-', 26, ')'], continuation(expr, done));
+    continue_with(null, [27, '-', 28, '^', 29, '^', 30, '^', 31], continuation(expr, done));
+    continue_with(null, [32, '^', 33, '*', 34, '^', 35], continuation(expr, done));
+    continue_with(null, [36, '^', 37, '*', '(', 38, ')', '^', 39], continuation(expr, done));
   }
   catch(e) {
     document.write("<p>error: " + e);
