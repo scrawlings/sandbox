@@ -1,0 +1,22 @@
+<html>
+<head>
+    <title>Recover Value for a Key</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js"></script>
+    <script type="text/javascript" src="persister.js"></script>
+</head>
+<body>
+  <p>Domain: <input type="text" id="domain" name="domain" /></p>
+  <p>Key: <input type="text" id="key" name="key" /></p>
+  <p><span id="recover">Recover</span></p>
+  <p>Value: <span id="value" /></p>
+  <script type="text/javascript">
+    $('recover').observe('click', function() {
+      persister.recover(
+        $('domain').value,
+        $('key').value,
+        function(data) { $('value').update(data); }
+      );
+    });
+  </script>
+</body>
+</html>

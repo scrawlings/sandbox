@@ -1,0 +1,11 @@
+Client Side Sandpit:
+
+The underlying SinatraRB application provides two URLs for persistence.
+
+GET /persisted/some_key Recovers data associated with the key "some_key".
+
+POST /persist expects the post body to be a JSON string for a map. 
+
+The data is stored in the ./db directory of the app using YAML from the Ruby standard library with file names corresponding to keys.
+
+There are two demonstration pages /persist.html and /recover.html which exercise the two persistence URLs.

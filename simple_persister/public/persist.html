@@ -1,0 +1,23 @@
+<html>
+<head>
+    <title>Persist Key and Value Pairs</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js"></script>
+    <script type="text/javascript" src="persister.js"></script>
+</head>
+<body>
+  <p>Domain: <input type="text" id="domain" name="domain" /></p>
+  <p>Key: <input type="text" id="key" name="key" /></p>
+  <p>Value: <input type="text" id="value" name="value" /></p>
+  <p id="persist">Persist</p>
+  <script type="text/javascript">
+    $('persist').observe('click', function() {
+      persister.persist(
+        $('domain').value,
+        $('key').value,
+        $('value').value,
+        function() { $('domain').value = $('key').value = $('value').value = ""; }
+      );
+    });
+  </script>
+</body>
+</html>
