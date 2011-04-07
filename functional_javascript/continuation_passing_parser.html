@@ -1,73 +1,84 @@
 <html>
 <head>
-<title>parser experiment</title>
+  <title>parser experiment</title>
 </head>
 <body>
 <script>
+
+  function triplet(a, op) {
+    return function(b, tokens, c) {
+      c([a, op, b], tokens);
+    }  
+  }
+
   function cont(fn, c) {
-	return function() {
-	  var a = Array.prototype.slice.call(arguments);
-	  fn.apply(null, a.concat(c));
-	}
+    return function() {
+      var a = Array.prototype.slice.call(arguments);
+      fn.apply(null, a.concat(c));
+    }
   }
 
   function chain() {
     var fn, len;
-    fn = arguments[arguments.length -1];
+    fn = arguments[arguments.length - 1];
     for (len = arguments.length - 2; len >= 0; --len) {
       fn = cont(arguments[len], fn);
     }
     return fn
   }
+  
+  function send() {
+    var fn, a;
+    fn = arguments[0];
+    a = Array.prototype.slice.call(arguments, 1);
+    fn.apply(null, a);
+  }
+
+
+
 
   function expr(a, tokens, c) {
-    chain(term, expr_tail, c)(null, tokens);
+    send(chain(term, expr_tail, c), null, tokens);
   }
 
   function expr_tail(a, tokens, c) {
     if (tokens[0] === '-' || tokens[0] === '+' ) {
-      chain(term, triplet(a, tokens[0]), expr_tail, c)(a, tokens.slice(1));
+      send(chain(term, triplet(a, tokens[0]), expr_tail, c), a, tokens.slice(1));
     } else {
-      c(a, tokens);
-    }	
-  }
-
-  function triplet(a, op) {
-    return function(b, tokens, c) {
-	  c([a, op, b], tokens);
-	}	
+      send(c, a, tokens);
+    }  
   }
 
   function term(a, tokens, c) {
-	chain(xpn, term_tail, c)(null, tokens);
+    send(chain(xpn, term_tail, c), null, tokens);
   }
 
   function term_tail(a, tokens, c) {
     if (tokens[0] === '/' || tokens[0] === '*' ) {
-	  chain(xpn, triplet(a, tokens[0]),term_tail, c)(null, tokens.slice(1));
+      send(chain(xpn, triplet(a, tokens[0]),term_tail, c), null, tokens.slice(1));
     } else {
-      c(a, tokens);
-    }	
+      send(c, a, tokens);
+    }  
   }
 
   function xpn(a, tokens, c) {
-	chain(factor, xpn_tail, c)(null, tokens);
+    send(chain(factor, xpn_tail, c), null, tokens);
   }
 
   function xpn_tail(a, tokens, c) {
     if (tokens[0] === '^') {
-	  chain(xpn, triplet(a, tokens[0]), c)(null, tokens.slice(1));
+      send(chain(xpn, triplet(a, tokens[0]), c), null, tokens.slice(1));
     } else {
-	  c(a, tokens);
+      send(c, a, tokens);
     }
   }
 
   function factor(a, tokens, c) {
     if (typeof(tokens[0]) === typeof(1)) { //'number') {
-	  c(tokens[0], tokens.slice(1));
-    }	
+      send(c, tokens[0], tokens.slice(1));
+    }  
     else if (tokens[0] === '(') {
-	  chain(expr, factor_bracket_tail, c)(null, tokens.slice(1));
+      send(chain(expr, factor_bracket_tail, c), null, tokens.slice(1));
     } else {
       throw "bad factor";
     }
@@ -75,41 +86,45 @@
 
   function factor_bracket_tail(a, tokens, c) {
     if (tokens[0] === ')') {
-	  c(a, tokens.slice(1));
+      send(c, a, tokens.slice(1));
     } else {
       throw "bad bracketing";
     }
   }
 
+
+
+
+
   try {
-	expr(null, [3, '+', 2, '*', 1], done);
-	expr(null, [3, '/', 2, '-', 1], done);
-	expr(null, [3, '-', 2, '-', 1, '-', 0], done);
-	expr(null, [4, '-', 3, '/', 2, '-', 1], done);
-	expr(null, [3, '/', '(', 2, '-', 1, ')'], done);
-	expr(null, [4, '-', 3, '^', 2, '^', 1, '^', 0], done);
-	expr(null, [4, '^', 3, '*', 2, '^', 1], done);
-	expr(null, [4, '^', 3, '*', '(', 2, ')', '^', 1], done);
+    send(chain(expr, done), null, [3, '+', 2, '*', 1]);
+    send(chain(expr, done), null, [3, '/', 2, '-', 1]);
+    send(chain(expr, done), null, [3, '-', 2, '-', 1, '-', 0]);
+    send(chain(expr, done), null, [4, '-', 3, '/', 2, '-', 1]);
+    send(chain(expr, done), null, [3, '/', '(', 2, '-', 1, ')']);
+    send(chain(expr, done), null, [4, '-', 3, '^', 2, '^', 1, '^', 0]);
+    send(chain(expr, done), null, [4, '^', 3, '*', 2, '^', 1]);
+    send(chain(expr, done), null, [4, '^', 3, '*', '(', 2, ')', '^', 1]);
   }
   catch(e) {
-	document.write("<p>error: " + e);
+    document.write("<p>error: " + e);
   }
 
   function done(a, tokens, c) {
-     array_writer(a);
-     document.write('<br>');
+    array_writer(a);
+    document.write('<br>');
   }
 
   function array_writer(a) {
     if (typeof(a) === 'object') {
-	  document.write('(');
-	  for(x in a) {
-		array_writer(a[x]);
-		document.write(' ');
-	  }
-	  document.write(')');
+      document.write('(');
+      for(x in a) {
+        array_writer(a[x]);
+        document.write(' ');
+    }
+      document.write(')');
     } else {
-	  document.write(a);
+      document.write(a);
     }
   }
   
