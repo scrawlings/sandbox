@@ -1,0 +1,95 @@
+<html>
+<head>
+<title>parser experiment</title>
+</head>
+<body>
+<script>
+  function expr(tokens) {
+    return expr_tail(term(tokens), tokens);
+  }
+
+  function expr_tail(a, tokens) {
+    if (tokens[0] === '-' || tokens[0] === '+' ) {
+	  return expr_tail([a, tokens.shift(), term(tokens)], tokens);
+    } else {
+      return a;
+    }	
+  }
+
+  function term(tokens) {
+    return term_tail(xpn(tokens), tokens);
+  }
+
+  function term_tail(a, tokens) {
+    if (tokens[0] === '/' || tokens[0] === '*' ) {
+	  return term_tail([a, tokens.shift(), xpn(tokens)], tokens);
+    } else {
+      return a;
+    }	
+  }
+
+  function xpn(tokens) {
+    return xpn_tail(factor(tokens), tokens);
+  }
+
+  function xpn_tail(a, tokens) {
+    if (tokens[0] === '^') {
+	  return [a, tokens.shift(), xpn(tokens)];
+    } else {
+	  return a;
+    }
+  }
+
+  function factor(tokens) {
+    if (typeof(tokens[0]) === 'number') {
+	  return tokens.shift();
+    }	
+    else if (tokens[0] === '(') {
+	  tokens.shift();
+      return factor_bracket_tail(expr(tokens), tokens);
+    }
+    throw "bad factor";
+  }
+
+  function factor_bracket_tail(a, tokens) {
+    if (tokens[0] === ')') {
+      tokens.shift();
+	  return a;
+    }
+    throw "bad bracketing";
+  }
+
+  try {
+	array_writer(expr([3, '+', 2, '*', 1])); document.write('<br>');
+	array_writer(expr([3, '/', 2, '-', 1])); document.write('<br>');
+	array_writer(expr([3, '-', 2, '-', 1, '-', 0])); document.write('<br>');
+	array_writer(expr([3, '/', '(', 2, '-', 1, ')'])); document.write('<br>');
+	array_writer(expr([4, '-', 3, '/', 2, '-', 1])); document.write('<br>');
+	array_writer(expr([4, '-', 3, '^', 2, '^', 1, '^', 0])); document.write('<br>');
+	array_writer(expr([4, '^', 3, '*', 2, '^', 1])); document.write('<br>');
+	array_writer(expr([4, '^', 3, '*', '(', 2, ')', '^', 1])); document.write('<br>');
+  }
+  catch(e) {
+	document.write("<p>error: " + e);
+  }
+
+  function array_writer(a) {
+    if (typeof(a) === 'object') {
+	  document.write('(');
+	  for(x in a) {
+		array_writer(a[x]);
+		document.write(' ');
+	  }
+	  document.write(')');
+    } else {
+	  document.write(a);
+    }
+  }
+  
+  var abc = [1, 2, 3, 4];
+  array_writer(abc);  document.write('<br>');
+  array_writer(abc.slice(1));  document.write('<br>');
+  
+
+</script>
+</body>
