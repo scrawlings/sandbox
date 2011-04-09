@@ -3,6 +3,8 @@ require 'json'
 require 'yaml'
 require 'fileutils'
 
+set :public, 'simple_persister/public'
+
 post '/persist/*' do
   FileUtils.mkpath('db/' + params["splat"][0])
   payload = JSON.parse(request.body.string)
